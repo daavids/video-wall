@@ -1,0 +1,41 @@
+{
+  "name": "videowall",
+  "version": "1.0.0",
+  "description": "Customizable split screen video wall",
+  "private": "true",
+  "scripts": {
+    "build": "cross-env NODE_ENV=production webpack --progress",
+    "dev": "cross-env NODE_ENV=development webpack-dev-server --open --hot",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daavids/video-wall.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/daavids/video-wall/issues"
+  },
+  "homepage": "https://github.com/daavids/video-wall#readme",
+  "dependencies": {
+    "vue": "^3.2.20",
+    "vue-loader": "^16.8.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.15.8",
+    "@popperjs/core": "^2.10.2",
+    "@vue/compiler-sfc": "^3.2.20",
+    "babel-loader": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "css-loader": "^6.4.0",
+    "file-loader": "^6.2.0",
+    "node-sass": "^6.0.1",
+    "sass-loader": "^12.1.0",
+    "style-loader": "^3.3.0",
+    "vue3-storage": "^0.1.11",
+    "webpack": "^5.58.1",
+    "webpack-cli": "^4.9.0",
+    "webpack-dev-server": "^4.3.1"
+  }
+}
