@@ -49,7 +49,7 @@
 
         </div>
         <div class="row video-grid flex-grow-1">
-            <div class="row flex-nowrap" v-for="i in rows" :key="i">
+            <div class="row flex-nowrap justify-content-center" v-for="i in rows" :key="i">
                 <div class="col player-wrapper border" v-for="j in cols" :key="j">
                     <div class="d-flex flex-row align-items-center justify-content-center h-100 w-100">
 
@@ -141,10 +141,15 @@ export default {
     },
     computed: {
         videoHeight() {
-            return 100 / this.rows + 'vh';
+            return (this.rows > 1)
+                ? window.screen.height / this.rows + 'px'
+                : 'auto';
+
         },
         videoWidth() {
-            return 100 / this.cols + 'vw';
+            return (this.cols > 1 )
+                ? window.screen.width / this.cols + 'px'
+                : 'auto';
         }
     },
     created() {
@@ -152,7 +157,7 @@ export default {
     },
     mounted() {
         let vue = this;
-        document.getElementById('gridModal').addEventListener('hidden.bs.modal', function (event) {
+        document.getElementById('gridModal').addEventListener('hidden.bs.modal', () => {
             vue.onPause();
         });
     },
@@ -233,6 +238,7 @@ export default {
     }
     .video-grid {
         max-height: 100%;
+        max-width: 100%;
         .player-wrapper {
             display: flex;
             flex-direction: column;
@@ -243,6 +249,9 @@ export default {
                     visibility: visible;
                     opacity: 1;
                 }
+            }
+            span {
+                word-break: break-all;
             }
             form {
                 max-width: 320px;
@@ -264,7 +273,9 @@ export default {
             width: v-bind(videoWidth);
         }
         video {
+            min-height: v-bind(videoHeight);
             max-height: v-bind(videoHeight);
+            min-width: v-bind(videoWidth);
             max-width: v-bind(videoWidth);
         }
     }

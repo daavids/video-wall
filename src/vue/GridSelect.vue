@@ -71,8 +71,8 @@ export default {
     computed: {
         options() {
             let options = [];
-            for (let i = 1; i <= 4; i++) {
-                for (let j = 1; j <= 4; j++) {
+            for (let i = 1; i <= 6; i++) {
+                for (let j = 1; j <= 6; j++) {
                     options.push({
                         cols: j,
                         rows: i
