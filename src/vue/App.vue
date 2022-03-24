@@ -79,7 +79,6 @@ export default {
             this.onSelectGrid({
                 cols: 0,
                 rows: 0
-
             });
 
             this.storage.setStorageSync('urls', {

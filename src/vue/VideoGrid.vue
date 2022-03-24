@@ -13,9 +13,10 @@
                     v-if="paused" data-bs-toggle="modal" data-bs-target="#gridModal">
                     <i class="bi bi-play"></i>
                 </a>
+
                 <a href="javascript:void(0);" class="btn btn-dark" @click="onPause"
-                    v-else data-bs-toggle="tooltip" title="Pause">
-                    <i class="bi bi-pause"></i>
+                    v-else data-bs-dismiss="modal" data-bs-target="#gridModal" id="pauseBtn">
+                    <i class="bi bi-x-circle"></i>
                 </a>
 
                 <a href="javascript:void(0);" class="btn btn-dark"
@@ -74,7 +75,7 @@
                                 <input type="hidden" name="col" :value="j">
 
                                 <div class="form-floating w-100">
-                                    <input type="url" name="url" :id="'url_' + i + '_' + j + '+Input'"
+                                    <input type="text" name="url" :id="'url_' + i + '_' + j + '+Input'"
                                         class="form-control" placeholder="Video URL" required>
                                     <label :for="'url_' + i + '_' + j + '+Input'">Video URL</label>
                                 </div>
@@ -88,9 +89,9 @@
                 </div>
             </div>
         </div>
-        <div class="modal" id="gridModal" tabindex="-1">
+        <div class="modal fade" id="gridModal" data-bs-backdrop="false" tabindex="-1" role="dialog">
             <div class="modal-dialog modal-fullscreen">
-                <div class="container-fluid px-0 d-flex flex-column flex-nowrap mh-100">
+                <div class="modal-content px-0 d-flex flex-column flex-nowrap mh-100">
                     <div class="row modal-row flex-nowrap" v-for="i in rows" :key="i">
                         <div class="col modal-col" v-for="j in cols" :key="j">
 
@@ -99,13 +100,38 @@
                                 && urls[i][j] !== undefined
                                 && urls[i][j] !== null">
 
+                                <!-- YT embeds -->
+                                <template v-if="urls[i][j].includes('/embed/')">
+                                    <iframe
+                                        class="embed-iframe"
+                                        :title="'Video ' + i + ':' + j"
+                                        :height="parseInt(videoHeight)"
+                                        :width="parseInt(videoWidth)"
+                                        :src="urls[i][j]">
+                                    </iframe>
+                                </template>
 
-                                <video :muted=muted
-                                    :loop=loop
-                                    controls
-                                    preload="auto">
-                                    <source :src="urls[i][j]">
-                                </video>
+                                <!-- Direct video file urls -->
+                                <template v-else-if="urls[i][j].includes('.mp4') || urls[i][j].includes('.webm')">
+                                    <video :muted=muted
+                                        :loop=loop
+                                        controls
+                                        preload="auto">
+                                        <source :src="urls[i][j]">
+                                    </video>
+                                </template>
+
+                                <!-- Other links -->
+                                <template v-else>
+                                    <iframe
+                                        class="fetch-iframe"
+                                        :title="'Video ' + i + ':' + j"
+                                        :height="parseInt(videoHeight)"
+                                        :width="parseInt(videoWidth)"
+                                        src="about:blank"
+                                        :data-src="urls[i][j]">
+                                    </iframe>
+                                </template>
 
                             </template>
                         </div>
@@ -128,10 +154,12 @@ export default {
     data() {
         return {
             urls: {
-                1: { 1: null, 2: null, 3: null, 4: null },
-                2: { 1: null, 2: null, 3: null, 4: null },
-                3: { 1: null, 2: null, 3: null, 4: null },
-                4: { 1: null, 2: null, 3: null, 4: null }
+                1: { 1: null, 2: null, 3: null, 4: null, 5:null, 6:null },
+                2: { 1: null, 2: null, 3: null, 4: null, 5:null, 6:null },
+                3: { 1: null, 2: null, 3: null, 4: null, 5:null, 6:null },
+                4: { 1: null, 2: null, 3: null, 4: null, 5:null, 6:null },
+                5: { 1: null, 2: null, 3: null, 4: null, 5:null, 6:null },
+                6: { 1: null, 2: null, 3: null, 4: null, 5:null, 6:null }
             },
             storage: null,
             paused: true,
@@ -143,13 +171,13 @@ export default {
         videoHeight() {
             return (this.rows > 1)
                 ? window.screen.height / this.rows + 'px'
-                : 'auto';
+                : window.screen.height;
 
         },
         videoWidth() {
             return (this.cols > 1 )
                 ? window.screen.width / this.cols + 'px'
-                : 'auto';
+                : window.screen.width;
         }
     },
     created() {
@@ -157,8 +185,19 @@ export default {
     },
     mounted() {
         let vue = this;
+        // pause when modal is exited via ESC key
         document.getElementById('gridModal').addEventListener('hidden.bs.modal', () => {
             vue.onPause();
+        });
+        // since modal is now clickable, add an exit button at the top
+        document.addEventListener('mousemove', (e) => {
+            if (vue.paused) {
+                return;
+            }
+            // only show button when mouse is in the top 20% of the screen
+            document.getElementById('pauseBtn').style.display = ((e.y / screen.height) <= 0.2)
+                ? 'block'
+                : 'none';
         });
     },
     methods: {
@@ -168,10 +207,12 @@ export default {
             let urls = this.storage.getStorageSync('urls');
             if (urls === undefined) {
                 urls = {
-                    1: { 1: null, 2: null, 3: null, 4: null },
-                    2: { 1: null, 2: null, 3: null, 4: null },
-                    3: { 1: null, 2: null, 3: null, 4: null },
-                    4: { 1: null, 2: null, 3: null, 4: null }
+                    1: { 1: null, 2: null, 3: null, 4: null, 5:null, 6:null },
+                    2: { 1: null, 2: null, 3: null, 4: null, 5:null, 6:null },
+                    3: { 1: null, 2: null, 3: null, 4: null, 5:null, 6:null },
+                    4: { 1: null, 2: null, 3: null, 4: null, 5:null, 6:null },
+                    5: { 1: null, 2: null, 3: null, 4: null, 5:null, 6:null },
+                    6: { 1: null, 2: null, 3: null, 4: null, 5:null, 6:null }
                 };
             }
             this.urls = urls;
@@ -200,31 +241,99 @@ export default {
         },
         onPlay() {
             this.paused = false;
+
             let players = document.querySelectorAll('video');
             players.forEach((player) => {
                 player.play();
             });
+
+            let iframes = document.querySelectorAll('iframe.embed-iframe');
+            iframes.forEach((i) => {
+                let url = new URL(i.src);
+                let params = url.searchParams;
+                params.set('autoplay', 1);
+                params.set('mute', this.muted);
+                i.src = url;
+            });
+
+            // for now just embed the URLs into iframes
+            // controls will be manual, can't figure out a workaround to CORS
+            let needsFetch = document.querySelectorAll('iframe.fetch-iframe');
+            needsFetch.forEach((n) => {
+                fetch(`https://api.allorigins.win/raw?url=${n.getAttribute('data-src')}`)
+                    .then((response) => {
+                        return response.body;
+                    }).then((rb) => {
+                        const reader = rb.getReader();
+
+                        return new ReadableStream({
+                            start(controller) {
+                                // The following function handles each data chunk
+                                function push() {
+                                    // "done" is a Boolean and value a "Uint8Array"
+                                    reader.read().then( ({done, value}) => {
+                                    // If there is no more data to read
+                                    if (done) {
+                                        controller.close();
+                                        return;
+                                    }
+                                    // Get the data and send it to the browser via the controller
+                                    controller.enqueue(value);
+                                    push();
+                                    })
+                                }
+
+                                push();
+                            }
+                        });
+                    }).then((stream) => {
+                        // Respond with our stream
+                        return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
+                    }).then((result) => {
+                        // Do things with result
+                        n.srcdoc = result;
+                    });
+            });
         },
         onPause() {
             this.paused = true;
+
             let players = document.querySelectorAll('video');
             players.forEach((player) => {
                 player.pause();
             });
+
+            let iframes = document.querySelectorAll('iframe.embed-iframe');
+            iframes.forEach((i) => {
+                let url = new URL(i.src);
+                let params = url.searchParams;
+                if (params.get('autoplay') !== null) {
+                    params.delete('autoplay');
+                    i.src = url;
+                }
+            });
+
+            let needsFetch = document.querySelectorAll('iframe.fetch-iframe');
+            needsFetch.forEach((n) => {
+                n.srcdoc = '';
+            });
         },
         onChangeControls(control, status) {
             this[control] = status;
-        },
-        onFullscreen() {
-            var myModalEl = document.getElementById('myModal');
-            var modal = bootstrap.Modal.getInstance(myModalEl);
-            modal.show();
         }
     }
 }
 </script>
 
 <style lang="scss" scoped>
+    #pauseBtn {
+        position: fixed;
+        top: 12px;
+        left: 50%;
+        margin-left: -50px;
+        margin-right: 0;
+        z-index: 9999;
+    }
     .video-grid-wrapper {
         min-height: 100%;
         max-height: 100%;
@@ -264,6 +373,7 @@ export default {
         }
     }
     .modal {
+        background: rgba(0, 0, 0, 0.5);
         .modal-row {
             height: v-bind(videoHeight);
             width: 100%;
@@ -272,7 +382,7 @@ export default {
             height: v-bind(videoHeight);
             width: v-bind(videoWidth);
         }
-        video {
+        video, iframe {
             min-height: v-bind(videoHeight);
             max-height: v-bind(videoHeight);
             min-width: v-bind(videoWidth);
